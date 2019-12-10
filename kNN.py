@@ -18,14 +18,13 @@ class kNN(algorithm):
                 'label':self.dataTest[1].values,
                 'estimate':-1})
 
-        self.dataTest[1]['estimate'] = self.dataTest[1].apply(getNN())
+        self.dataTest[1]['estimate'] = self.dataTest[0].apply(self.getNN, axis=1)
 
 
     # for row r, return the indicies of the k nearest neighbors as a 
     # list ordered from closest to furthest
     def getNN(self, r):
-        sdf = ((self.dataTrain[0] - r)
-                .apply(lambda x: pow(abs(x), self.norm))
+        sdf = (((self.dataTrain[0] - r)**self.norm)
                 .sum(axis=1)
                 .sort_values())
 
@@ -40,6 +39,6 @@ class kNN(algorithm):
         max = 0
         for j in freq:
             if j > max:
-                max = j
+                max = freq[j]
 
         return max
