@@ -4,7 +4,7 @@ from kNN_skl import kNN_skl
 
 
 # number of rows
-i = 10000
+i = 50
 k = 5
 p = 2
 
@@ -12,8 +12,7 @@ p = 2
 # with the homemade method
 start_time = time.time()
 
-#alg = kNN('mnist', 20, 2)
-alg = kNN_skl('mnist', i, k, p)
+alg = kNN('mnist', i, k, p)
 
 alg.readData()
 #alg.drawElement(alg.dataTest[0].iloc[i].values, 'plots/mnistTrain_{}.pdf'.format(i))
