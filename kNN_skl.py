@@ -12,12 +12,12 @@ class kNN_skl(algorithm):
         self.neigh = KNeighborsClassifier(n_neighbors=k, p=norm)
 
     def train(self):
-        self.neigh.fit(self.dataTrain[0].values, self.dataTrain[1].values)
+        self.neigh.fit(self.dataTrain.iloc[:, 1:].values, self.dataTrain.iloc[:, 0].values)
 
     def classify(self):
 
-        y = self.neigh.predict(self.dataTest[0].values)
-        self.dataTest[1] = pd.concat([self.dataTest[1], pd.DataFrame(y)], axis=1)
-        self.dataTest[1].columns = ['label','estimate']
+        y = self.neigh.predict(self.dataTest.iloc[:, 1:].values)
+        self.dataTest = pd.concat(
+                [self.dataTest, pd.DataFrame(y).rename({0: 'estimate'}, axis=1)], axis=1)
         
         #print(self.dataTest[1])

@@ -14,21 +14,20 @@ class kNN(algorithm):
         pass
 
     def classify(self):
-        self.dataTest[1] = pd.DataFrame({
-                'label':self.dataTest[1].values,
-                'estimate':-1})
-
-        self.dataTest[1]['estimate'] = self.dataTest[0].apply(self.getNN, axis=1)
+        self.dataTest['estimate'] = self.dataTest.iloc[:, 1:].apply(self.getNN, axis=1)
 
 
-    # for row r, return the indicies of the k nearest neighbors as a 
-    # list ordered from closest to furthest
+    # for row r, return the label of the most frequent of the k nearest neighbors
     def getNN(self, r):
-        sdf = (((self.dataTrain[0] - r)**self.norm)
+        sdf = (((self.dataTrain.iloc[:, 1:] - r)**self.norm)
                 .sum(axis=1)
                 .sort_values())
 
-        l = [self.dataTrain[1].loc[sdf.index[i]] for i in range(self.k)]
+        #print(sdf)
+
+        l = [self.dataTrain['label'].loc[sdf.index[i]] for i in range(self.k)]
+
+        #print(l)
 
         # count the frequency of NNs
         freq = {}
