@@ -13,19 +13,19 @@ I.e., x -> (x, 1)
 
 class svm(algorithm):
 
-    def __init__(self, dataName='mnist', nsamp=-1, delta=1, lambd=1):
+    def __init__(self, dataName='mnist', nsamp=-1, delta=1, lambd=0.1):
         self.dataName = dataName
         self.nsamp = nsamp
         self.delta = delta
         self.lambd = lambd
         self.W = self.__init_W()
-        self.W[:] = 1
 
 
     def __init_W(self):
         W = None # (N+1) weights
         if self.dataName == 'mnist':
-            W = np.empty((10, 785)) # 10 weights x (N+1)
+            #W = np.empty((10, 785)) # 10 x (N+1) weights 
+            W = np.random.randn(10, 785) * 0.01 # small random weights
             #W = np.full( (785, 10), 1) # (N+1) x 10 weights
         return W
 
@@ -34,13 +34,26 @@ class svm(algorithm):
         self.dataTrain['b'] = 1
         self.dataTest['b'] = 1
 
-        print(self.__loss_fun(self.dataTrain.iloc[1], self.W))
-        print(self.grad(self.dataTrain.iloc[1], self.W))
+        #print(self.W)
+        gW = self.grad(self.dataTrain.iloc[1], self.W)
+
+        for j in range(400):
+            gW = np.full((10, 785), 0)
+            for i in range(j*100,j*100 + 100):
+                gW += self.grad(self.dataTrain.iloc[i], self.W)
+
+            gW = gW/100
+            self.W = self.W - 0.01 * (gW + self.lambd*self.W)
+
+        #print(gW)
+        #print(self.W)
 
 
     def classify(self):
-        pass
-        #self.dataTest['estimate'] = self.dataTest.apply(getNN, axis=1)
+        self.dataTest['estimate'] = self.dataTest.apply(self.classRow, axis=1)
+
+    def classRow(self, r):
+        return np.argmax(self.W.dot(r[1:].values))
 
 
     # loss function to calculate 'loss' 
@@ -68,7 +81,8 @@ class svm(algorithm):
     #   returns the gradient of the W.r as a ndarray of dim W
     def grad(self, r, W):
 
-        gW = self.__init_W()
+        gW = np.full((10, 785), 0)
+
         l = self.__loss_fun(r, W)
 
         count = 0
