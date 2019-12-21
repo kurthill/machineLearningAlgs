@@ -1,19 +1,22 @@
 from algorithm import algorithm
 import numpy as np
 import pandas as pd
+import random
 
 """
-Implementation of the support vector machine (linear classifyer)
+Implementation of the support vector machine (linear classifyer) with
+soft margin
 
 x vector in R^N classified into M classes via Wx + b -> R^M
 W is extended to W' in R^(N+1) x R^M to incorporate b: W'x -> R^M
 I.e., x -> (x, 1)
 
+Weights determined with stocastic gradient descent 
 """
 
 class svm(algorithm):
 
-    def __init__(self, dataName='mnist', nsamp=-1, delta=1, lambd=0.1):
+    def __init__(self, dataName='mnist', nsamp=-1, delta=1, lambd=1):
         self.dataName = dataName
         self.nsamp = nsamp
         self.delta = delta
@@ -30,20 +33,24 @@ class svm(algorithm):
         return W
 
 
-    def train(self):
+    def train(self, nit = 100, nbatch = 1):
         self.dataTrain['b'] = 1
         self.dataTest['b'] = 1
 
-        #print(self.W)
-        gW = self.grad(self.dataTrain.iloc[1], self.W)
-
-        for j in range(400):
+        # implement pegasos algorithm on minibatches
+        # random minibatch
+        for t in range(1, nit+1):
+            eta = 1/(self.lambd*t) # decaying step size
+            j = random.randint(0, len(self.dataTrain) - nbatch)
+            # initialize grad and average over minibatch
             gW = np.full((10, 785), 0)
-            for i in range(j*100,j*100 + 100):
+            for i in range(j,j + nbatch):
                 gW += self.grad(self.dataTrain.iloc[i], self.W)
 
-            gW = gW/100
-            self.W = self.W - 0.01 * (gW + self.lambd*self.W)
+            # average minibatch
+            gW = gW/nbatch
+            # updata W = W - stepsize ( grad + regularization )
+            self.W = self.W - eta*(gW + self.lambd*self.W)
 
         #print(gW)
         #print(self.W)
@@ -51,6 +58,11 @@ class svm(algorithm):
 
     def classify(self):
         self.dataTest['estimate'] = self.dataTest.apply(self.classRow, axis=1)
+        #df = self.dataTest.copy()
+        #df['estimate'] = df.apply(self.classRow, axis=1)
+        #print(df)
+        #return df
+
 
     def classRow(self, r):
         return np.argmax(self.W.dot(r[1:].values))
